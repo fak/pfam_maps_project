@@ -7,3 +7,4 @@ def custom_sql(query, params):
     data = cursor.fetchall()
     return data
 
+
