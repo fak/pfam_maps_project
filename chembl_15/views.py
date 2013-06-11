@@ -111,5 +111,5 @@ def evidence(request, pfam_name):
         'top_mols' : top_mols,
         'top_acts' : top_acts,
         'pfam_name': pfam_name,
-    })
+        })
     return HttpResponse(t.render(c))
