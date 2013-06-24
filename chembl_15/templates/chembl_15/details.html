@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> Conflict details </title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="/static/chembl_15/d3/d3.v3.js"></script>
+    <!-- load the prototype library from google -->
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript">google.load("prototype", "1.7");</script>
+
+    <!-- the following libraries are all hosted on the Pfam site, but can obviously be
+         retrieved and served locally -->
+
+    <!-- the domain graphics library -->
+    <script type="text/javascript" src="http://pfam.sanger.ac.uk/static/javascripts/domain_graphics.js"></script>
+
+    <!-- in order to standardize the look of text, and in order to make it work at
+         all in older browsers (and IE), we need the canvas text library. And, in   turn,
+         that library uses a font description in a separate javascript file -->
+    <script type="text/javascript" src="http://pfam.sanger.ac.uk/static/javascripts/canvas.text.js?dontUseMoz=true&amp;reimplement=true"></script>
+    <script type="text/javascript" src="http://pfam.sanger.ac.uk/static/javascripts/faces/optimer-bold-normal.js"></script>
+
+    <!-- we use the (non-free) prototip2 library to add tooltips. It's not free, but
+         nearly. The domain graphics code should cope if it's not loaded, so you
+         could just omit the prototip load -->
+    <script type="text/javascript" src="http://pfam.sanger.ac.uk/shared/javascripts/prototip.js"></script>
+    <script type="text/javascript" src="http://pfam.sanger.ac.uk/shared/javascripts/styles.js"></script>
+
+    <!-- stylesheets. -->
+    <link rel="stylesheet" href="/static/chembl_15/css/pfam.css" type="text/css" />
+    <link rel="stylesheet" href="http://pfam.sanger.ac.uk/shared/css/prototip.css" type="text/css" />
+
+    <script type="text/javascript">
+        var generate = function(seq, i){
+            var sequence = seq[0];
+            var pg = new PfamGraphic();
+            console.log(i);
+            pg.setParent("dg_" + i);
+            pg.setImageParams( {
+              xscale: 1,
+              yscale: 1
+              } );
+            try {
+               pg.setSequence( sequence );
+               pg.render();
+           } 
+            catch ( e ) {
+             $("errors").update( e ).show();
+           }
+        }
+    </script>
+
+</head>
+    <body>
+    {% if doc_id and pubmed_id and act and dom_arch and molregno %}
+    <h1> Details for activity id: {{ act }}  </h1>
+    <p> Assay against {{ pref_name }}, Uniprot Id: <a href="http://www.uniprot.org/uniprot/{{ accession }}" target="blank"> {{ accession }} </a>. The activity is derived from assay <a href="https://www.ebi.ac.uk/chembldb/assay/inspect/{{ ass_id }}" target="blank"> {{ ass_id }} </a> with the description <br> >> {{ desc }}. << <br>
+    Pubmed id: <a href="http://europepmc.org/abstract/MED/{{pubmed_id}}" target="_blank"> {{ pubmed_id }} </a> <br>
+    doc_id: <a href="https://www.ebi.ac.uk/chembldb/doc/inspect/{{ doc_id }}" target="blank"> {{ doc_id }} </a> </p>
+    {% else %}
+        <p>No index  available.</p>
+    {% endif %}
+    {% for uniprot, arch in dom_arch.items %} 
+        <div id="dg_{{ forloop.counter }}"></div>
+        <script type="text/javascript">
+            generate({{ arch|safe }}, {{ forloop.counter }});
+        </script>
+    {% endfor %}
+    </body>
+</html>

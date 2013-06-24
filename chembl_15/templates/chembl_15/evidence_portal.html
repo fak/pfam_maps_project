@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Evidence for small molecule binding to Pfam domains</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/static/chembl_15/css/pfam.css" type="text/    css" />
+
+</head>
+    <body>
+    {% if names %}
+        <ul>
+        {% for name in names %}
+            <li><a href="/chembl_15/evidence/{{ name }}/">{{ name }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No index  available.</p>
+    {% endif %}
+
+</body>
+</html>

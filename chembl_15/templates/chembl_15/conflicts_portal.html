@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Conflicts in the mapping of small molecule binding to Pfam domains</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/static/chembl_15/css/pfam.css" type="text/    css" />
+
+</head>
+    <body>
+        {% if act_count and dub_count and clash_count and clash_arch %}
+        <p> There are {{ act_count }} activities that could be mapped without conflicts. These are activities from binding assays of the type 'Ki', 'Kd', 'IC50', 'EC50' or logarithmic conversions thereof. In theory, the mapping could be extended to other activity types, as long as the mapping to the target is a direct mapping in the assay.</p>
+        <p> There are {{ clash_count }} activities where the mapping defaulted to more than one     domain type. </p>
+        <ul>
+        {% for name in clash_arch %}
+            <li><a href="/chembl_15/conflicts/{{ name }}/">{{ name }}</a></li>
+        {% endfor %}
+        </ul>
+    <p> There are also {{ dub_count }} activities where the mapping defaulted to multiple      instances of the same domain type. </p>
+    {% else %}
+        <p>No index  available.</p>
+    {% endif %}
+
+</body>
+</html>

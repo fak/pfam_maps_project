@@ -9,7 +9,7 @@ import numpy as np
 import yaml
 import simplejson as json
 from operator import itemgetter
-
+import requests
 
 def standardize_acts(acts):
     paramFile = open('local.yaml')
@@ -154,10 +154,12 @@ def evidence(request, pfam_name):
     (std_acts, lkp) = standardize_acts(acts)
     (top_mols, top_acts) = filter_acts(std_acts, lkp)
     t = loader.get_template('chembl_15/evidence.html')
+    n_acts = len(std_acts)
     c = Context({
-        'top_mols' : top_mols,
-        'top_acts' : top_acts,
-        'pfam_name': pfam_name,
+        'top_mols'  : top_mols,
+        'top_acts'  : top_acts,
+        'pfam_name' : pfam_name,
+        'n_acts'    : n_acts
         })
     return HttpResponse(t.render(c))
 
@@ -188,7 +190,7 @@ def vote(request, conflict_id, act):
     try:
         domain_name = request.POST['choice']
     except KeyError:
-        return render_to_response('polls/detail.html', {
+        return render_to_response('index.html', {
             'error_message': "You didn't select a choice.",
         }, context_instance=RequestContext(request))
     data = queryDevice.custom_sql("""
@@ -222,8 +224,9 @@ def conflicts(request, conflict_id):
     try:
         arch_idx = paginator.page(page)
     except (EmptyPage, InvalidPage):
-        contacts = paginator.page(paginator.num_pages)
+        arch_idx = paginator.page(paginator.num_pages)
     print arch_idx.object_list
+    print arch_idx.number
     domL = conflict_id.split(' vs. ') # check for defaultdict syntax, this should make this code cleaner.
     domstr = "','".join(domL)
     counts = queryDevice.custom_sql("""
@@ -265,9 +268,8 @@ def get_arch(data):
     return trc
 
 def details(request, act):
-    import requests
     data = queryDevice.custom_sql("""
-    SELECT DISTINCT dcs.doc_id, dcs.pubmed_id, act.molregno, cs.accession
+    SELECT DISTINCT dcs.chembl_id, dcs.pubmed_id, act.molregno, cs.accession, td.pref_name, dcs.title, ass.chembl_id, ass.description
         FROM activities act
         JOIN docs dcs
           ON act.doc_id = dcs.doc_id
@@ -285,6 +287,11 @@ def details(request, act):
     doc_id =  data[0][0]
     pubmed_id =  data[0][1]
     molregno = data[0][2]
+    accession = data[0][3]
+    pref_name = data[0][4]
+    title = data[0][5]
+    ass_id = data[0][6]
+    desc = data[0][7]
     dom_arch = {}
     for ent in data:
         uniprot = ent[3]
@@ -298,9 +305,20 @@ def details(request, act):
 
     if not pubmed_id:
         pubmed_id = 'NA'
+    if not title:
+        title = 'NA'
+    if not pref_name:
+        pref_name = 'NA'
+    if not desc:
+        desc = 'NA'
     c = {'doc_id'       : doc_id,
          'pubmed_id'    : pubmed_id,
          'molregno'     : molregno,
+         'title'        : title,
+         'pref_name'    : pref_name,
+         'accession'    : accession,
+         'ass_id'       : ass_id,
+         'desc'         : desc,
          'act'          : act,
          'dom_arch'     : dom_arch
         }
