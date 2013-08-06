@@ -10,7 +10,7 @@
   <!-- Use the .htaccess and remove these lines to avoid edge case issues.
        More info: h5bp.com/b/378 -->
   <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> -->   <!-- Not yet implemented -->
-  <title>ChEMPfam - Welcome.</title>
+  <title>ChEMPfam - Evidence Portal</title>
   <meta name="description" content="EMBL-EBI"><!-- Describe what this page is about -->
   <meta name="keywords" content="bioinformatics, chembl, pfam"><!-- A few keywords that relate to the content of THIS PAGE (not the whol project) -->
   <meta name="Felix A Kruger" content="EMBL-EBI"><!-- Your [project-name] here -->
@@ -20,7 +20,8 @@
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
   <!-- CSS: implied media=all -->
   <!-- CSS concatenated and minified via ant build script-->
-  <link rel="stylesheet" href="//www.ebi.ac.uk/web_guidelines/css/compliance/develop/boilerplate-style.css">  <link type="text/css" rel="stylesheet" href="//www.ebi.ac.uk/sites/ebi.ac.uk/files/css/css_pbm0lsQQJ7A7WCCIMgxLho6mI_kBNgznNUWmTWcnfoE.css" media="all" />
+  <link rel="stylesheet" href="//www.ebi.ac.uk/web_guidelines/css/compliance/develop/boilerplate-style.css">  
+  <link type="text/css" rel="stylesheet" href="//www.ebi.ac.uk/sites/ebi.ac.uk/files/css/css_pbm0lsQQJ7A7WCCIMgxLho6mI_kBNgznNUWmTWcnfoE.css" media="all" />
   <link type="text/css" rel="stylesheet" href="//www.ebi.ac.uk/sites/ebi.ac.uk/files/css/css_6z9YLyvHu9hldkIQFm447bL5kIJd6aXLJo4jPwkIOuE.css" media="all" />
   <link type="text/css" rel="stylesheet" href="//www.ebi.ac.uk/sites/ebi.ac.uk/files/css/css_lyC8Tmq5m_SQrlekAhI1rvsZIy_TEiOAiYrRtoQzF7I.css" media="all" />
   <link type="text/css" rel="stylesheet" href="//www.ebi.ac.uk/sites/ebi.ac.uk/files/css/css_g_1VBPVR642xOdrVZyhVAznHwmIMSmWtvYrox46vmmU.css" media="all" />
@@ -43,7 +44,7 @@
   <script type="text/javascript" src="//www.ebi.ac.uk/sites/ebi.ac.uk/modules/custom/training_specific/training_specific.js?mm0jbl"></script>
   <script type="text/javascript" src="//www.ebi.ac.uk/sites/ebi.ac.uk/libraries/tinymce/jscripts/tiny_mce/plugins/media/js/embed.js?mm0jbl"></script>
   -->
-  </script>
+
 </head>
 
 
@@ -91,15 +92,30 @@
                         <div class="panels-flexible-column panels-flexible-column-service-main grid_16 alpha panels-flexible-column-first">
                             <div class="panels-flexible-row panels-flexible-row-service-4 panels-flexible-row-first clearfix ">
                                 <div class="panels-flexible-region panels-flexible-region-service-top ">
-                                    <div class="panel-pane pane-custom pane-2 clearfix">
-                                        <!-- Content goes here -->
-                                        <p> Welcome to ChemPfam. The two branches of this service provide on overview of evidence for small molecule binding to Pfam-A domains and a curation interface that highlights conflicting mappings. </p>
+                                    <div class="panel-pane pane-custom pane-2 clearfix" > 
+                                        <h3> Evidence for small molecule binding to Pfam-A domains </h3>
+                                        <p>We query the ChEMBL database for measured interactions of small molecules with single domain proteins containing a given domain. The requirements for a measurement to be counted as evidence are then the following:</p>
                                         <ul>
-                                        <li><a href="/chembl_15/conflicts/"> conflicts </a></li>
-                                        <li><a href="/chembl_15/evidence/"> evidence </a></li>
+                                            <li> Activity type must be one of 'Ki','Kd','IC50','EC50', 'AC50' or logarithmic conversion. </li>
+                                            <li> The relationship in the database must be '=' </li> 
+                                            <li> The assay type must be assay_type = 'B' </li>
+                                            <li> The relationship type in the assay to target mapping must be relationship_type = 'D'</li>
+                                            <li> The potency threshold was set at 1 &mu;M.</li>
                                         </ul>
-                                        <!-- Content ends here -->
+                                        <p>Evidence for small molecule binding to {{ names|length }} Pfam-A domains is listed below.</p>
                                     </div>
+                                    <div class="panel-pane pane-custom pane-2 clearfix">
+                                        {% if names %}
+                                            <ul>
+                                            {% for name in names %}
+                                                <li><a href="/chembl_15/evidence/{{ name }}/">{{ name }}</a></li>
+                                            {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p>No index  available.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
                                 <div class="panel-pane pane-custom pane-3 clearfix">
                                     <h3 class='icon icon-generic icon-c4' data-icon='i'>Questions</h3>
                                     <p>If you would like to know more, please contact <a href="mailto:fkrueger@ebi.ac.uk">Felix</a></p>
@@ -130,6 +146,7 @@
                     </div>
                 </div>
             </div>
+        </div>
         </section> 
     <!-- End suggested layout containers -->
     </div>
@@ -167,56 +184,34 @@
         </div>
     </footer>
   </div> <!--! end of #wrapper -->
+
+
   <!-- JavaScript at the bottom for fast page loading -->
+
   <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
   <!--
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
   <script>window.jQuery || document.write('<script src="../js/libs/jquery-1.6.2.min.js"><\/script>')</script>
   -->
-  <!-- Your custom JavaScript file scan go here... change names accordingly -->
-  <link rel="stylesheet" type="text/css" href="/static/chembl_15/css/tooltipster.css" />
-  <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-  <script type="text/javascript" src="/static/chembl_15/js/jquery.tooltipster.min.js"></script>
-  <script>
-      $(document).ready(function() {
-          $('.tooltip').tooltipster();
-      });
-  </script>
-  <!-- Load variables -->
-  <script type="text/javascript">
-      var generate = function(seq, i){
-          var sequence = seq[0];
-          var pg = new PfamGraphic();
-          console.log(i);
-          pg.setParent("dg_" + i);
-          pg.setImageParams( {
-            xscale: 1,
-            yscale: 1
-            } );
-          try {
-             pg.setSequence( sequence );
-             pg.render();
-         } 
-          catch ( e ) {
-           $("errors").update( e ).show();
-         }
-      }
-  </script>
-  <!-- Tooltips -->
-  <link rel="stylesheet" type="text/css" href="/static/chembl_15/css/tooltipster.css" />
-  <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-  <script type="text/javascript" src="/static/chembl_15/js/jquery.tooltipster.min.js"></script>
-  <script>
-      $(document).ready(function() {
-          $('.tooltip').tooltipster();
-      });
-  </script>
 
+
+  <!-- Your custom JavaScript file scan go here... change names accordingly -->
+  
+  <link rel="stylesheet" type="text/css" href="/static/chembl_15/css/tooltipster.css" />
+  <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+  <script type="text/javascript" src="/static/chembl_15/js/jquery.tooltipster.min.js"></script>
+  <script>
+      $(document).ready(function() {
+          $('.tooltip').tooltipster();
+      });
+  </script>
   <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/plugins.js"></script>
   <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/script.js"></script>
+
   <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/cookiebanner.js"></script>  
   <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/foot.js"></script>
   <!-- end scripts-->
+
   <!-- Google Analytics details... -->      
   <!-- Change UA-XXXXX-X to be your site's ID -->
   <!--
@@ -227,13 +222,19 @@
     });
   </script>
   -->
+
+
   <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
        chromium.org/developers/how-tos/chrome-frame-getting-started -->
   <!--[if lt IE 7 ]>
     <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
     <script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
   <![endif]-->
+
+    
+  
 <!-- page_bottom -->
-</body>
+    
+    </body>
 </html>
 
