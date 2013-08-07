@@ -127,10 +127,42 @@ def vote_on_assay(request, conflict_id, assay_id):
         entries = PfamMaps.objects.filter(activity_id=act)
         for entry in entries:
             entry.manual_flag = 1
+            entry.comment = 'revoked'
+            entry.timestamp = time.strftime('%d %B %Y %T', time.gmtime())
             if entry.compd_id == compd_id:
                 entry.status_flag = 0
             entry.save()
     return HttpResponseRedirect(reverse('conflicts', args=(conflict_id,)))
+
+
+def revoke_on_assay(request, conflict_id, assay_id):
+    try:
+        domain_name = request.POST['choice']
+    except KeyError:
+        return render_to_response('conflict_ebi.html', {
+            'error_message': "You didn't select a choice.",
+        }, context_instance=RequestContext(request))
+    data = helper.custom_sql("""
+    SELECT DISTINCT act.activity_id, compd_id
+        FROM pfam_maps pm
+        JOIN activities act
+          ON act.activity_id = pm.activity_id
+        JOIN assays ass
+          ON ass.assay_id = act.assay_id
+        WHERE ass.chembl_id = %s AND domain_name = %s
+        """ ,[assay_id, domain_name])
+    for ent in data:
+        act = ent[0]
+        compd_id = ent[1]
+        entries = PfamMaps.objects.filter(activity_id=act)
+        for entry in entries:
+            entry.manual_flag = 0
+            entry.status_flag = 1
+            entry.comment = 'revoked'
+            entry.timestamp = time.strftime('%d %B %Y %T', time.gmtime())
+            entry.save()
+    return HttpResponseRedirect(reverse('resolved', args=(conflict_id,)))
+
 
 
 def conflicts(request, conflict_id):
