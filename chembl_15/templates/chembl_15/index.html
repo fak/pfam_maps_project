@@ -77,7 +77,7 @@
                 <div class="grid_24" id="local-title">
                     <div class="content">
                         <h1>ChEMPfam</h1>
-                        <h2 class="strapline tooltip">Mapping small molecule bioactivities to Pfam-A domains</h2>
+                        <h2 class="strapline">Mapping small molecule bioactivities to Pfam-A domains</h2>
                     </div>
                 </div>
             </div>
@@ -95,8 +95,9 @@
                                         <!-- Content goes here -->
                                         <p> Welcome to ChemPfam. The two branches of this service provide on overview of evidence for small molecule binding to Pfam-A domains and a curation interface that highlights conflicting mappings. </p>
                                         <ul>
-                                        <li><a href="/chembl_15/conflicts/"> conflicts </a></li>
-                                        <li><a href="/chembl_15/evidence/"> evidence </a></li>
+                                            <li><a href="/chembl_15/conflicts/"> conflicts </a></li>
+                                            <li><a href="/chembl_15/evidence/"> evidence </a></li>
+                                            <li><a href="/chembl_15/resolved/"> resolved </a></li>
                                         </ul>
                                         <!-- Content ends here -->
                                     </div>
@@ -174,43 +175,6 @@
   <script>window.jQuery || document.write('<script src="../js/libs/jquery-1.6.2.min.js"><\/script>')</script>
   -->
   <!-- Your custom JavaScript file scan go here... change names accordingly -->
-  <link rel="stylesheet" type="text/css" href="/static/chembl_15/css/tooltipster.css" />
-  <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-  <script type="text/javascript" src="/static/chembl_15/js/jquery.tooltipster.min.js"></script>
-  <script>
-      $(document).ready(function() {
-          $('.tooltip').tooltipster();
-      });
-  </script>
-  <!-- Load variables -->
-  <script type="text/javascript">
-      var generate = function(seq, i){
-          var sequence = seq[0];
-          var pg = new PfamGraphic();
-          console.log(i);
-          pg.setParent("dg_" + i);
-          pg.setImageParams( {
-            xscale: 1,
-            yscale: 1
-            } );
-          try {
-             pg.setSequence( sequence );
-             pg.render();
-         } 
-          catch ( e ) {
-           $("errors").update( e ).show();
-         }
-      }
-  </script>
-  <!-- Tooltips -->
-  <link rel="stylesheet" type="text/css" href="/static/chembl_15/css/tooltipster.css" />
-  <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
-  <script type="text/javascript" src="/static/chembl_15/js/jquery.tooltipster.min.js"></script>
-  <script>
-      $(document).ready(function() {
-          $('.tooltip').tooltipster();
-      });
-  </script>
 
   <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/plugins.js"></script>
   <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/script.js"></script>
