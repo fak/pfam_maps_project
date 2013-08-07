@@ -15,13 +15,13 @@
     <body>
         {% if top_mols and top_acts  %}
        <ul>
-           Shown below are measured interactions of the {{ pfam_name }} Pfam-A domain with small molecules. Each point represents a measurement. There is currently a limit of ten on the number of displayed molecules. Thetotal number of activities for this domain type in ChEMBL is {{ n_acts }}. For some Pfam-A domains, such as 7tm_1, there will be many more compounds. 
+           Shown below are measured interactions of the {{ pfam_name }} Pfam-A domain with small molecules. Each point represents a measurement. There is currently a limit of ten on the number of displayed molecules. The total number of activities for this domain type in ChEMBL is {{ n_acts }}. For some Pfam-A domains, such as 7tm_1, there will be many more compounds. 
         </ul>
     {% else %}
         <p>No index  available.</p>
     {% endif %}
 
-    <script type="text/javascript" src="/static/chembl_15/javascript/scatterplot.js"></script>
+    <script type="text/javascript" src="/static/chembl_15/js/scatterplot.js"></script>
 
     </body>
 </html>
