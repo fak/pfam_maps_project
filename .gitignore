@@ -1,5 +1,7 @@
 local.yaml
-
+mpf.yaml
+mpf_local.yaml
+settings.py
 # Compiled source #
 ###################
 *.com
