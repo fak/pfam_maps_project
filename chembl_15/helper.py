@@ -20,7 +20,8 @@ def get_assay_meta(assay_page):
     except IndexError:
         assay_2 = 'This string is not a foreign key in the assays table'
     metas = custom_sql("""
-    SELECT DISTINCT ass.chembl_id, dcs.pubmed_id, cs.accession, td.pref_name, ass.description
+    SELECT DISTINCT ass.chembl_id, dcs.pubmed_id, cs.accession, td.pref_name,
+            ass.description
         FROM activities act
         JOIN docs dcs
           ON act.doc_id = dcs.doc_id
@@ -50,6 +51,18 @@ def get_assay_meta(assay_page):
             assay_page[assay_id]['pref_name']= pref_name
             assay_page[assay_id]['pubmed'] =  pubmed_id
             assay_page[assay_id]['description'] = description
+    metas = custom_sql("""
+    SELECT ass.chembl_id, pm.comment, pm.timestamp
+        FROM activities act
+        JOIN assays ass
+          ON ass.assay_id = act.assay_id
+        JOIN pfam_maps pm
+          ON pm.activity_id = act.activity_id
+        WHERE ass.chembl_id IN (%s, %s) LIMIT 1
+        """, [assay_1, assay_2 ])
+    assay_id = metas[0][0]
+    assay_page[assay_id]['comment'] = metas[0][1]
+    assay_page[assay_id]['timestamp'] = metas[0][2]
     return assay_page
 
 
@@ -58,11 +71,11 @@ def get_pfam_arch(assay_page):
         for uniprot in assay_page[ass]['components']:
             r = requests.get('http://pfam.sanger.ac.uk/protein/%s/graphic'% uniprot)
             doms = r.content
+            #doms = '[{"length":"950","regions":[{"colour":"#2dcf00", "endStyle":"jagged","end":"361","startStyle":"jagged","text":"Peptidase_S8","href":"/family/PF00082","type":"pfama","start": "159"},]}]' #this would be an example of a pfam-architecture obtained in this way.
             try:
                 assay_page[ass]['pfam_archs'].append(doms)
             except KeyError:
                 assay_page[ass]['pfam_archs']=[doms]
-                #pfam_json[accession] = '[{"length":"950","regions":[{"colour":"#2dcf00","endStyle":"jagged","end":"361","startStyle":"jagged","text":"Peptidase_S8","href":"/family/PF00082","type":"pfama","start": "159"},]}]' #this would be an example of a pfam-architecture obtained in this way.
     return assay_page
 
 
