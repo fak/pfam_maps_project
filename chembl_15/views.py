@@ -109,9 +109,11 @@ def vote_on_assay(request, conflict_id, assay_id):
     try:
         domain_name = request.POST['choice']
     except KeyError:
-        return render_to_response('conflict_ebi.html', {
-            'error_message': "You didn't select a choice.",
-        }, context_instance=RequestContext(request))
+        return HttpResponseRedirect(reverse('conflicts', args=(conflict_id,)))
+    try:
+        comment = request.POST['comment']
+    except KeyError:
+        comment = "revoked w/o comment"
     data = helper.custom_sql("""
     SELECT DISTINCT act.activity_id, compd_id
         FROM pfam_maps pm
@@ -127,7 +129,7 @@ def vote_on_assay(request, conflict_id, assay_id):
         entries = PfamMaps.objects.filter(activity_id=act)
         for entry in entries:
             entry.manual_flag = 1
-            entry.comment = 'revoked'
+            entry.comment = comment
             entry.timestamp = time.strftime('%d %B %Y %T', time.gmtime())
             if entry.compd_id == compd_id:
                 entry.status_flag = 0
@@ -135,30 +137,27 @@ def vote_on_assay(request, conflict_id, assay_id):
     return HttpResponseRedirect(reverse('conflicts', args=(conflict_id,)))
 
 
-def revoke_on_assay(request, conflict_id, assay_id):
+def revoke_assay(request, conflict_id, assay_id):
     try:
-        domain_name = request.POST['choice']
+        comment = request.POST['comment']
     except KeyError:
-        return render_to_response('conflict_ebi.html', {
-            'error_message': "You didn't select a choice.",
-        }, context_instance=RequestContext(request))
+        comment = "revoked w/o comment"
     data = helper.custom_sql("""
-    SELECT DISTINCT act.activity_id, compd_id
+    SELECT DISTINCT act.activity_id
         FROM pfam_maps pm
         JOIN activities act
           ON act.activity_id = pm.activity_id
         JOIN assays ass
           ON ass.assay_id = act.assay_id
-        WHERE ass.chembl_id = %s AND domain_name = %s
-        """ ,[assay_id, domain_name])
+        WHERE ass.chembl_id = %s
+        """ ,[assay_id])
     for ent in data:
         act = ent[0]
-        compd_id = ent[1]
         entries = PfamMaps.objects.filter(activity_id=act)
         for entry in entries:
             entry.manual_flag = 0
             entry.status_flag = 1
-            entry.comment = 'revoked'
+            entry.comment = comment
             entry.timestamp = time.strftime('%d %B %Y %T', time.gmtime())
             entry.save()
     return HttpResponseRedirect(reverse('resolved', args=(conflict_id,)))
@@ -215,8 +214,10 @@ def resolved(request, conflict_id):
         WHERE pm.manual_flag=1
         """, [])
     clash_arch = helper.arch_assays(data)
-    print clash_arch
-    arch_assays = clash_arch[conflict_id]
+    try:
+        arch_assays = clash_arch[conflict_id]
+    except KeyError:
+        return render_to_response('chembl_15/index.html')
     assay_hier = {}
     for ass_id in arch_assays:
         assay_hier[ass_id] = {}
@@ -253,48 +254,25 @@ def resolved_portal(request):
         })
     return HttpResponse(t.render(c))
 
-def details(request, act):
+def details(request, assay_id):
     data = helper.custom_sql("""
-    SELECT DISTINCT dcs.chembl_id, dcs.pubmed_id, act.molregno, cs.accession, td.pref_name, dcs.title, ass.chembl_id, ass.description
+    SELECT DISTINCT act.molregno, md.chembl_id,  ass.chembl_id, ass.description
         FROM activities act
-        JOIN docs dcs
-          ON act.doc_id = dcs.doc_id
         JOIN assays ass
           ON ass.assay_id = act.assay_id
-        JOIN target_dictionary td
-          ON td.tid = ass.tid
-        JOIN target_components tc
-          ON tc.tid = td.tid
-        JOIN component_sequences cs
-          ON tc.component_id = cs.component_id
-        WHERE activity_id = %s
+        JOIN molecule_dictionary md
+          ON md.molregno = act.molregno
+        WHERE assay_id = %s
         """, [act])
-    doc_id =  data[0][0]
-    pubmed_id =  data[0][1]
-    molregno = data[0][2]
-    accession = data[0][3]
-    pref_name = data[0][4]
-    title = data[0][5]
-    ass_id = data[0][6]
-    desc = data[0][7]
-    pfam_arch = helper.get_pfam_arch(data)
-    if not pubmed_id:
-        pubmed_id = 'NA'
-    if not title:
-        title = 'NA'
-    if not pref_name:
-        pref_name = 'NA'
-    if not desc:
-        desc = 'NA'
-    c = {'doc_id'       : doc_id,
-         'pubmed_id'    : pubmed_id,
-         'molregno'     : molregno,
-         'title'        : title,
-         'pref_name'    : pref_name,
-         'accession'    : accession,
-         'ass_id'       : ass_id,
-         'desc'         : desc,
-         'act'          : act,
-         'pfam_arch'     : pfam_arch
+    mols = {}
+    for ent in data:
+        molregno = data[0]
+        m_chembl = data[1]
+        mols[molregno] = m_chembl
+    a_chembl = data[2]
+    desc = data[3]
+    c = {'mols'     : mols,
+         'ass_id'   : ass_id,
+         'desc'     : desc,
         }
     return render_to_response('chembl_15/details_ebi.html',c,                          context_instance=RequestContext(request))
