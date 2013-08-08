@@ -99,13 +99,30 @@
                     <li class="menu-3272 menu-about-us last" id="about-us"><a href="//www.ebi.ac.uk/about" title="">About us</a></li></ul>
                 </nav>            
             </div>
-        
             <div id="local-masthead" class="masthead grid_24 nomenu">
                 <div class="grid_24" id="local-title">
                     <div class="content">
                         <h1>ChEMPfam</h1>
                         <h2 class="strapline">Mapping small molecule bioactivities to Pfam-A domains</h2>
                     </div>
+                    <nav>
+                        <div class="menu-block-wrapper menu-block-2 menu-name-main-menu parent-mlid-0 menu-level-2">
+                            <ul id="local_nav" class="grid_24">
+                                <li class="first active-trail active menu-mlid-3060 menu-overview active active-trail menu-3060">
+                                    <a class="active-trail active" href="/chembl_15">Overview</a>
+                                </li>
+                                <li class=" menu-mlid-3458 menu-a-to-z menu-3458">
+                                    <a href="/chembl_15/conflicts">Conflicts</a>
+                                </li>
+                                <li class=" menu-mlid-3615 menu-service-teams menu-3615">
+                                    <a href="/chembl_15/resolved">Resolved</a>
+                                </li>
+                                <li class="last menu-mlid-3135 menu-support menu-3135">
+                                    <a title="" href="/chembl_15/evidence" fix="h-">Evidence</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
                 </div>
             </div>
         </header>
@@ -139,10 +156,10 @@
                                         {% if assay_hier and arch and doms %}
                                             <h3> Conflicting architecture: {{ arch }}  </h3>
                                             {% for ass, lkp in assay_hier.items %}
-                                            <h4>Assay-id: <a href="https://www.ebi.ac.uk/chembldb/assay/inspect/{{  ass_id }}" target="blank"> {{ ass_id }} </a><a href= "/chembl_15/details/conflicts/{{ ass }}/ "> {{   ass }} </a></h4>
-                                            <p> description: {{ lkp.description }}  </p>
-                                                <p> The Pubmed-ID of the source document for this assay is <a href="http://europepmc.org/abstract/MED/{{lkp.pubmed}}" target="_blank"> {{ lkp.pubmed }} </a>. The target in this assay carries the pref_name: {{ lkp.pref_name }}. And is composed of the following chain(s):
-                                                  <ul>
+                                            <h4>Assay-id: <a href="https://www.ebi.ac.uk/chembldb/assay/inspect/{{  ass_id }}"  target="blank"> {{ ass_id }} </a><a href= "/chembl_15/details/conflicts/{{ ass }}/ "> {{   ass }} </a></h4>
+                                                <p> description: {{ lkp.description }}  </p>
+                                                    <p> The Pubmed-ID of the source document for this assay is <a href="http://europepmc.org/abstract/MED/{{lkp.pubmed}}" target="_blank"> {{ lkp.pubmed }} </a>. The last comment that was left about this assay is: {{ lkp.comment }} and was made on {{ lkp.timestamp }}. <br> The target in this assay carries the pref_name: {{ lkp.pref_name }}. And is composed of the following chain(s):
+                                            <ul>
                                                     {% for uniprot in lkp.components %}
                                                         <li><a href="http://www.uniprot.org/uniprot/{{ uniprot }}" target="blank">{{uniprot}}</a></li>
                                                     {% endfor %}
@@ -154,12 +171,9 @@
                                                             </script>
                                                     {% endfor %}
                                                 </p>
-                                                <form action="{% url vote_on_assay ass arch  %}" method="post">{% csrf_token %}
-                                                    {% for dom in doms %}
-                                                        <input type='radio' name='choice' id="choice{{forloop.counter}}{{ ass }}"  value="{{ dom }}"/>
-                                                        <label for= "choice{{forloop.counter}}{{ ass }}"> {{ dom }} </label> 
-                                                    {% endfor %}
-                                                    <input type="submit" value="Vote" />
+                                                <form action="{% url revoke_assay ass arch  %}" method="post">{% csrf_token %}
+                                                    Comment: <input type="text" name="comment"><br>
+                                                    <input type="submit" value="Revoke">
                                                 </form>
                                             {% endfor %}
                                         {% else %}
