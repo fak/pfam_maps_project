@@ -155,27 +155,29 @@
                                         </div>
                                         {% if assay_hier and arch and doms %}
                                             <h3> Conflicting architecture: {{ arch }}  </h3>
-                                            {% for ass, lkp in assay_hier.items %}
-                                            <h4>Assay-id: <a href="https://www.ebi.ac.uk/chembldb/assay/inspect/{{  ass_id }}"  target="blank"> {{ ass_id }} </a><a href= "/chembl_15/details/conflicts/{{ ass }}/ "> {{   ass }} </a></h4>
-                                                <p> description: {{ lkp.description }}  </p>
-                                                    <p> The Pubmed-ID of the source document for this assay is <a href="http://europepmc.org/abstract/MED/{{lkp.pubmed}}" target="_blank"> {{ lkp.pubmed }} </a>. The last comment that was left about this assay is: {{ lkp.comment }} and was made on {{ lkp.timestamp }}. <br> The target in this assay carries the pref_name: {{ lkp.pref_name }}. And is composed of the following chain(s):
-                                            <ul>
-                                                    {% for uniprot in lkp.components %}
-                                                        <li><a href="http://www.uniprot.org/uniprot/{{ uniprot }}" target="blank">{{uniprot}}</a></li>
-                                                    {% endfor %}
-                                                  </ul>
+                                                {% for ass, lkp in assay_hier.items %}
+                                                    <h4>Assay-id: <a href="https://www.ebi.ac.uk/chembldb/assay/inspect/{{  ass_id }}" target="blank"> {{ ass_id }} </a><a href= "/chembl_15/details/conflicts/{{ ass }}/ "> {{   ass }} </a></h4>
+                                                    <p> <strong>Pubmed-ID</strong>: <a href="http://europepmc.org/abstract/MED/{{lkp.pubmed}}"            target="_blank"> {{ lkp.pubmed }} </a>. <br> <strong>Description</strong>: {{ lkp.description }}  </p>
+                                                    <p>Last edit on {{lkp.timestamp}}: <em> {{ lkp.comment }} </em>  </p> 
+                                                    <p>Assigned pref_name of the assay target - <strong>{{ lkp.pref_name }} </strong> <br>
+                                                    {{ lkp.pref_name}} is composed of the following chain(s):
+                                                    <ul>
+                                                        {% for uniprot in lkp.components %}
+                                                            <li><a href="http://www.uniprot.org/uniprot/{{ uniprot }}" target="blank">{{uniprot}}</a></li>
+                                                        {% endfor %}
+                                                    </ul>
                                                     {% for pfam_arch in lkp.pfam_archs %}
                                                         <div id="dg_{{ forloop.counter }}{{ass}}"></div>
                                                             <script type="text/javascript">
                                                                 generate({{ pfam_arch|safe }}, "{{ forloop.counter }}{{ass}}");
                                                             </script>
                                                     {% endfor %}
-                                                </p>
-                                                <form action="{% url revoke_assay ass arch  %}" method="post">{% csrf_token %}
-                                                    Comment: <input type="text" name="comment"><br>
-                                                    <input type="submit" value="Revoke">
-                                                </form>
-                                            {% endfor %}
+                                                    </p>
+                                                    <form action="{% url revoke_assay ass arch %}" method="post">{% csrf_token %}
+                                                        Comment: <input type="text" name="comment"><br>
+                                                        <input type="submit" value="Revoke">
+                                                    </form>
+                                                {% endfor %}    
                                         {% else %}
                                             <p>No index  available.</p>
                                         {% endif %}
