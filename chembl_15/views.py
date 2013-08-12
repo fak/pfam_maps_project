@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, render_to_response
 from django.db import connection
+import itertools
 import helper
 import time
 
@@ -28,7 +29,7 @@ def evidence_portal(request):
 
 def evidence(request, pfam_name):
     acts = helper.custom_sql("""
-    SELECT DISTINCT act.standard_value, act.standard_units, act.standard_type, act.  activity_id, act.molregno, single_domains.accession
+    SELECT DISTINCT act.standard_value, act.standard_units, act.standard_type, act.activity_id, act.molregno, single_domains.accession
     FROM pfam_maps pm
         JOIN activities act
             ON act.activity_id = pm.activity_id
@@ -75,17 +76,40 @@ def conflicts_portal(request):
     clash_arch = helper.custom_sql("""
     SELECT DISTINCT activity_id, domain_name FROM pfam_maps WHERE category_flag=2 AND manual_flag=0""", [])
     clash_arch = helper.process_arch(clash_arch)
+    # Uncomment in case we want list the number of assays rather than activities.
+    #data = helper.custom_sql("""
+    #SELECT DISTINCT pm.domain_name, ass.chembl_id
+    #    FROM pfam_maps pm
+    #    JOIN activities act
+    #      ON act.activity_id = pm.activity_id
+    #    JOIN assays ass
+    #      ON act.assay_id = ass.assay_id
+    #    WHERE pm.status_flag = 1
+    #      AND manual_flag = 0
+    #      AND category_flag = 2
+    #    """, [])
+    #clash_arch = helper.arch_assays(data)
     t = loader.get_template('chembl_15/conflict_portal_ebi.html')
     c = Context({
         'act_count'   : act_count,
         'man_count'   : man_count,
         'dub_count'   : dub_count,
         'clash_count' : clash_count,
-        'clash_arch'  : clash_arch.keys(),
+        'clash_arch'  : clash_arch,
         })
     return HttpResponse(t.render(c))
 
-
+def resolved_portal(request):
+    clash_arch = helper.custom_sql("""
+    SELECT DISTINCT activity_id, domain_name FROM pfam_maps WHERE category_flag=2                AND             manual_flag=1""", [])
+    clash_arch = helper.process_arch(clash_arch)
+    clash_acts = (list(itertools.chain(*clash_arch.values())))
+    t = loader.get_template('chembl_15/resolved_portal_ebi.html')
+    c = Context({
+        'clash_count' : len(clash_acts),
+        'clash_arch'  : clash_arch.keys(),
+        })
+    return HttpResponse(t.render(c))
 
 def vote_on_activity(request, conflict_id, act):
     try:
@@ -165,18 +189,29 @@ def revoke_assay(request, conflict_id, assay_id):
 
 
 def conflicts(request, conflict_id):
-    data = helper.custom_sql("""
+    doms = conflict_id.split(' vs. ')
+    placeholder = "%s"
+    placeholder = ','.join([placeholder] * len(doms))
+    query = """
     SELECT DISTINCT pm.domain_name, ass.chembl_id
         FROM pfam_maps pm
         JOIN activities act
           ON act.activity_id = pm.activity_id
         JOIN assays ass
           ON act.assay_id = ass.assay_id
-        WHERE pm.status_flag = 1 AND manual_flag = 0
-        """, [])
+        WHERE pm.status_flag = 1
+          AND manual_flag = 0
+          AND category_flag = 2
+          AND domain_name IN(%s)
+        """ % placeholder
+    data = helper.custom_sql(query, doms)
     clash_arch = helper.arch_assays(data)
     try:
         arch_assays = clash_arch[conflict_id]
+        out = open('test.txt','w')
+        for ass in arch_assays:
+            out.write(ass + "', '")
+        out.close()
     except KeyError:
         return render_to_response('chembl_15/index.html')
     assay_hier = {}
@@ -204,15 +239,21 @@ def conflicts(request, conflict_id):
 
 
 def resolved(request, conflict_id):
-    data = helper.custom_sql("""
+    doms = conflict_id.split(' vs. ')
+    placeholder = "%s"
+    placeholder = ','.join([placeholder] * len(doms))
+    query = """
     SELECT DISTINCT pm.domain_name, ass.chembl_id
         FROM pfam_maps pm
         JOIN activities act
           ON act.activity_id = pm.activity_id
         JOIN assays ass
           ON act.assay_id = ass.assay_id
-        WHERE pm.manual_flag=1
-        """, [])
+          WHERE manual_flag = 1
+          AND category_flag = 2
+          AND domain_name IN(%s)
+        """ % placeholder
+    data = helper.custom_sql(query, doms)
     clash_arch = helper.arch_assays(data)
     try:
         arch_assays = clash_arch[conflict_id]
@@ -241,18 +282,6 @@ def resolved(request, conflict_id):
         }
     return render_to_response('chembl_15/resolved_ebi.html',c, context_instance=RequestContext(request))
 
-import itertools
-def resolved_portal(request):
-    clash_arch = helper.custom_sql("""
-    SELECT DISTINCT activity_id, domain_name FROM pfam_maps WHERE category_flag=2 AND             manual_flag=1""", [])
-    clash_arch = helper.process_arch(clash_arch)
-    clash_acts = (list(itertools.chain(*clash_arch.values())))
-    t = loader.get_template('chembl_15/resolved_portal_ebi.html')
-    c = Context({
-        'clash_count' : len(clash_acts),
-        'clash_arch'  : clash_arch.keys(),
-        })
-    return HttpResponse(t.render(c))
 
 def details(request, assay_id):
     data = helper.custom_sql("""
