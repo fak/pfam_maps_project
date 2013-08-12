@@ -118,19 +118,19 @@ def standardize_acts(acts):
 def add_meta(top_acts):
     act_ids = [str(x[3]) for x in top_acts]
     act_str = "','".join(act_ids)
-    data = custom_sql("""SELECT act.activity_id, td.pref_name, dcs.title
+    data = custom_sql("""SELECT act.activity_id, td.pref_name, ass.chembl_id, td.chembl_id, md.chembl_id
                                  FROM activities act
                                  JOIN assays ass
                                      ON act.assay_id = ass.assay_id
                                  JOIN target_dictionary td
                                      ON ass.tid = td.tid
-                                 JOIN docs dcs
-                                     ON act.doc_id = dcs.doc_id
+                                 JOIN molecule_dictionary md
+                                     ON md.molregno = act.molregno
                                  WHERE activity_id IN('%s')""" % act_str, [])
     lkp = {}
     for meta in data:
         act = meta[0]
-        lkp[act] = (meta[1], meta[2])
+        lkp[act] = (meta[1], meta[2], meta[3], meta[4])
     top_acts = [x + lkp[x[3]]  for x in top_acts]
     return top_acts
 
@@ -148,7 +148,7 @@ def process_arch(data):
         act_id = clash[0]
         dom = str(clash[1])
         try:
-            lkp[act_id] = lkp[act_id] +'  vs. ' + dom
+            lkp[act_id] = ' vs. '.join(sorted([lkp[act_id], dom]))
         except KeyError:
             lkp[act_id] = dom
     inv_lkp = dictinvert(lkp)
@@ -160,7 +160,7 @@ def arch_assays(data):
         assay_id = clash[1]
         dom = clash[0]
         try:
-            lkp[assay_id] = lkp[assay_id] +'  vs. ' + dom
+            lkp[assay_id] = ' vs. '.join(sorted([lkp[assay_id], dom]))
         except KeyError:
             lkp[assay_id] = dom
     inv_lkp = dictinvert(lkp)
