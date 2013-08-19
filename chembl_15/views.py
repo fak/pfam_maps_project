@@ -101,13 +101,13 @@ def conflicts_portal(request):
 
 def resolved_portal(request):
     clash_arch = helper.custom_sql("""
-    SELECT DISTINCT activity_id, domain_name FROM pfam_maps WHERE category_flag=2                AND             manual_flag=1""", [])
+    SELECT DISTINCT activity_id, domain_name FROM pfam_maps WHERE category_flag=2 AND manual_flag=1""", [])
     clash_arch = helper.process_arch(clash_arch)
     clash_acts = (list(itertools.chain(*clash_arch.values())))
     t = loader.get_template('chembl_15/resolved_portal_ebi.html')
     c = Context({
         'clash_count' : len(clash_acts),
-        'clash_arch'  : clash_arch.keys(),
+        'clash_arch'  : clash_arch,
         })
     return HttpResponse(t.render(c))
 
@@ -208,10 +208,10 @@ def conflicts(request, conflict_id):
     clash_arch = helper.arch_assays(data)
     try:
         arch_assays = clash_arch[conflict_id]
-        out = open('test.txt','w')
-        for ass in arch_assays:
-            out.write(ass + "', '")
-        out.close()
+        #out = open('test.txt','w')
+        #for ass in arch_assays:
+        #    out.write(ass + "', '")
+        #out.close()
     except KeyError:
         return render_to_response('chembl_15/index.html')
     assay_hier = {}
