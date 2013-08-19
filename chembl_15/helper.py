@@ -90,6 +90,7 @@ def standardize_acts(acts):
             standard_value = float(data[0])
         except TypeError:
             continue
+        pass_filter = False # set filter
         standard_units = data[1]
         standard_type = data[2]
         act_id = data[3]
@@ -99,15 +100,18 @@ def standardize_acts(acts):
         if standard_type in ['Ki','Kd','IC50','EC50', 'AC50'] and standard_units == 'nM':
             standard_value = -(np.log10(standard_value)-9)
             standard_type = 'p' + standard_type
+            pass_filter = True
         # p-scaling.
         if standard_type in ['log Ki', 'log Kd', 'log IC50', 'log EC50', 'logAC50'] and standard_units is None:
             standard_value = - standard_value
             standard_type = 'p' + standard_type.split(' ')[1]
+            pass_filter = True
         # Mixing types.
         if standard_type in ['pKi', 'pKd']:
             standard_value = standard_value - ki_adjust
+            pass_filter = True
         # Filtering inactives.
-        if standard_value >= 3:
+        if standard_value >= 3 and pass_filter:
             std_acts.append((molregno, standard_value, accession, act_id))
             try:
                 lkp[molregno] += 1
